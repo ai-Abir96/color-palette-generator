@@ -31,7 +31,7 @@ const ColorCell = ({ colorValue }) => {
     >
       {toolTip && <div className="absolute -top-10 left-0 p-2 bg-white rounded shadow">{selectedColor}</div>}
       {colorPicker && (
-        <div className="absolute top-0 left-0 p-2">
+        <div className="absolute top-10 left-0 p-2">
           <SketchPicker color={selectedColor} onChange={handleColorChange} />
         </div>
       )}

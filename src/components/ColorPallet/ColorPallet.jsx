@@ -1,10 +1,13 @@
 import { useState } from "react";
 import DragNDropColor from "../DragAndDrop/DragNDropColor";
+import { useDispatch, useSelector } from "react-redux";
+import { clearPalette, savePalette, updateColors } from "../utils/slices/paletteSlice";
 
 const ColorPallet = () => {
-  const [colors, setColors] = useState(["#FF5733", "#34FFA2", "#438AFF", "#FD33E9"]);
   const [newColor, setNewColor] = useState("");
-  const [savedPalettes, setSavedPalettes] = useState([]);
+  const dispatch = useDispatch();
+  const colors = useSelector((state) => state.palettes.colors);
+  const savedPalettes = useSelector((state) => state.palettes.savedPalettes);
 
   //generates random color in hex format
   const getRandomColor = () => {
@@ -18,14 +21,13 @@ const ColorPallet = () => {
 
   //generate colorpallet for the colors array
   const generateRandomColorPalette = () => {
-    const randomColors = Array.from({ length: 4 }, getRandomColor);
-    setColors(randomColors);
+    dispatch(updateColors(Array.from({ length: 4 }, getRandomColor)));
   };
 
   //adds a new color to the colors pallet array
   const handleAddColor = () => {
     if (newColor) {
-      setColors([...colors, newColor]);
+      dispatch(updateColors([...colors, newColor]));
       setNewColor("");
     }
   };
@@ -35,17 +37,17 @@ const ColorPallet = () => {
     const updatedColors = [...colors];
     const [movedColor] = updatedColors.splice(fromIndex, 1);
     updatedColors.splice(toIndex, 0, movedColor);
-    setColors(updatedColors);
+    dispatch(updateColors(updatedColors));
   };
 
   //for saving the color pallet
   const handleSavePalette = () => {
-    setSavedPalettes([...savedPalettes, colors]);
+    dispatch(savePalette(colors));
   };
 
   //export the color pallet as json file
   const handleExportPalette = (palette) => {
-    const json = JSON.stringify(palette, null, 2);
+    const json = JSON.stringify(palette);
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -55,28 +57,34 @@ const ColorPallet = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleClearPalette = () => {
+    dispatch(clearPalette());
+  };
   return (
     <div className="mt-48 mx-48">
-      <div className=" flex flex-col items-center">
-        <div className="flex items-center justify-center">
-          <div className="flex items-center">
+      <div className="flex flex-col items-center justify-center">
+        <div>
+          <div className="flex items-center justify-center">
             {colors.map((color, index) => (
               <DragNDropColor key={color} index={index} colorValue={color} moveColor={moveColor} />
             ))}
           </div>
-          <button
-            className="bg-blue-500 w-1/6 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={generateRandomColorPalette}
-          >
-            Generate Random Palette
-          </button>
+
+          <div className="flex md:flex-row flex-col items-center justify-center mt-5 gap-3">
+            <button
+              className="bg-blue-500  hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              onClick={generateRandomColorPalette}
+            >
+              Generate Random Palette
+            </button>
+            <button
+              className="bg-green-500   hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+              onClick={handleSavePalette}
+            >
+              Save Palette
+            </button>
+          </div>
         </div>
-        <button
-          className="bg-blue-500 w-1/6 mt-5 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={handleSavePalette}
-        >
-          Save Palette
-        </button>
         <div className="flex mt-20">
           <input
             type="text"
@@ -91,19 +99,26 @@ const ColorPallet = () => {
         </div>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 flex flex-col items-center justify-center">
         {savedPalettes.map((palette, index) => (
           <div className="justify-center items-center flex flex-col" key={index}>
-            <div className="flex flex-wrap  -mx-4 mt-2">
+            <div className="flex mt-2">
               {palette.map((color, colorIndex) => (
                 <DragNDropColor key={color} index={colorIndex} colorValue={color} moveColor={moveColor} />
               ))}
             </div>
             <button className=" bg-green-500 text-white px-2 py-1" onClick={() => handleExportPalette(palette)}>
-              Export
+              Export Palette
             </button>
           </div>
         ))}
+        {savedPalettes.length != 0 && (
+          <div className="mt-6 ">
+            <button className=" bg-red-500 text-white px-2 py-1" onClick={handleClearPalette}>
+              Clear All
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

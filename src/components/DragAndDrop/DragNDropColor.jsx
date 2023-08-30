@@ -18,7 +18,7 @@ const DragNDropColor = ({ index, colorValue, moveColor }) => {
   });
 
   return (
-    <div ref={(node) => ref(drop(node))} className=" flex items-center mx-auto px-4 py-4">
+    <div ref={(node) => ref(drop(node))}>
       <ColorCell colorValue={colorValue} />
     </div>
   );
